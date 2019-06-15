@@ -20,8 +20,8 @@ func (u *user) updateUser(db *sql.DB) error {
 	return err
 }
 
-func (p *product) deleteProduct(db *sql.DB) error {
-	_, err := db.Exec("DELETE FROM products WHERE id=$1", p.ID)
+func (u *user) deleteUser(db *sql.DB) error {
+	_, err := db.Exec("DELETE FROM users WHERE id=$1", u.ID)
 
 	return err
 }
