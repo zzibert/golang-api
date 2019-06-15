@@ -26,8 +26,8 @@ func (u *user) deleteUser(db *sql.DB) error {
 	return err
 }
 
-func (p *product) createProduct(db *sql.DB) error {
-	err := db.QueryRow("INSERT INTO products(name, price) VALUES($1, $2) RETURNING id", p.Name, p.Price).Scan(&p.ID)
+func (u *user) createUser(db *sql.DB) error {
+	err := db.QueryRow("INSERT INTO users(name, surname) VALUES($1, $2) RETURNING id", u.Name, u.Surname).Scan(&u.ID)
 
 	if err != nil {
 		return err
