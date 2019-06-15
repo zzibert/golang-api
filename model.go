@@ -4,14 +4,14 @@ import (
 	"database/sql"
 )
 
-type product struct {
+type user struct {
 	ID    int     `json:"id"`
 	Name  string  `json:"name"`
-	Price float64 `json:"price"`
+	Surname float64 `json:"surname"`
 }
 
-func (p *product) getProduct(db *sql.DB) error {
-	return db.QueryRow("SELECT name, price FROM products WHERE id=$1", p.ID).Scan(&p.Name, &p.Price)
+func (u *user) getUser(db *sql.DB) error {
+	return db.QueryRow("SELECT name, surname FROM users WHERE id=$1", p.ID).Scan(&p.Name, &p.Surname)
 }
 
 func (p *product) updateProduct(db *sql.DB) error {
