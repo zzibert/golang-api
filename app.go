@@ -38,6 +38,8 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUser).Methods("GET")
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.updateUser).Methods("PUT")
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.deleteUser).Methods("DELETE")
+
+	a.Router.HandleFunc("/book", a.createBook).Methods("POST")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +77,23 @@ func (a *App) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, u)
+}
+
+func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
+	var b book
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&b); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := b.createBook(a.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, b)
 }
 
 func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
