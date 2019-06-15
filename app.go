@@ -40,6 +40,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.deleteUser).Methods("DELETE")
 
 	a.Router.HandleFunc("/book", a.createBook).Methods("POST")
+	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +61,26 @@ func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, users)
+}
+
+func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {
+	count, _ := strconv.Atoi(r.FormValue("count"))
+	start, _ := strconv.Atoi(r.FormValue("start"))
+
+	if count > 10 || count < 1 {
+		count = 10
+	}
+	if start < 0 {
+		start = 0
+	}
+
+	books, err := getBooks(a.DB, start, count)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, books)
 }
 
 func (a *App) createUser(w http.ResponseWriter, r *http.Request) {
