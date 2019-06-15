@@ -5,17 +5,17 @@ import (
 )
 
 type user struct {
-	ID    int     `json:"id"`
-	Name  string  `json:"name"`
+	ID      int     `json:"id"`
+	Name    string  `json:"name"`
 	Surname float64 `json:"surname"`
 }
 
 func (u *user) getUser(db *sql.DB) error {
-	return db.QueryRow("SELECT name, surname FROM users WHERE id=$1", p.ID).Scan(&p.Name, &p.Surname)
+	return db.QueryRow("SELECT name, surname FROM users WHERE id=$1", u.ID).Scan(&u.Name, &u.Surname)
 }
 
-func (p *product) updateProduct(db *sql.DB) error {
-	_, err := db.Exec("UPDATE products SET name=$1, price=$2 WHERE id=$3", p.Name, p.Price, p.ID)
+func (u *user) updateUser(db *sql.DB) error {
+	_, err := db.Exec("UPDATE users SET name=$1, surname=$2 WHERE id=$3", u.Name, u.Surname, u.ID)
 
 	return err
 }
