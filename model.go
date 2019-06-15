@@ -36,9 +36,9 @@ func (u *user) createUser(db *sql.DB) error {
 	return nil
 }
 
-func getProducts(db *sql.DB, start, count int) ([]product, error) {
+func getUsers(db *sql.DB, start, count int) ([]user, error) {
 	rows, err := db.Query(
-		"SELECT id, name,  price FROM products LIMIT $1 OFFSET $2",
+		"SELECT id, name,  surname FROM users LIMIT $1 OFFSET $2",
 		count, start)
 
 	if err != nil {
@@ -47,15 +47,15 @@ func getProducts(db *sql.DB, start, count int) ([]product, error) {
 
 	defer rows.Close()
 
-	products := []product{}
+	users := []user{}
 
 	for rows.Next() {
-		var p product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price); err != nil {
+		var u user
+		if err := rows.Scan(&u.ID, &u.Name, &u.Surname); err != nil {
 			return nil, err
 		}
-		products = append(products, p)
+		users = append(users, u)
 	}
 
-	return products, nil
+	return users, nil
 }
