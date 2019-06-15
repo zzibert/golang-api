@@ -81,7 +81,7 @@ func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
+		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
 
@@ -89,7 +89,7 @@ func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 	if err := u.getUser(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			respondWithError(w, http.StatusNotFound, "Product not found")
+			respondWithError(w, http.StatusNotFound, "user not found")
 		default:
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
@@ -103,7 +103,7 @@ func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
+		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
 
@@ -128,7 +128,7 @@ func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid Product ID")
+		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
 

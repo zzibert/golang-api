@@ -5,9 +5,9 @@ import (
 )
 
 type user struct {
-	ID      int     `json:"id"`
-	Name    string  `json:"name"`
-	Surname float64 `json:"surname"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
 }
 
 func (u *user) getUser(db *sql.DB) error {
