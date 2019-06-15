@@ -33,14 +33,14 @@ func (a *App) Run(addr string) {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/products", a.getProducts).Methods("GET")
-	a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
+	a.Router.HandleFunc("/users", a.getUsers).Methods("GET")
+	a.Router.HandleFunc("/user", a.createUser).Methods("POST")
+	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUser).Methods("GET")
+	a.Router.HandleFunc("/user/{id:[0-9]+}", a.updateUser).Methods("PUT")
+	a.Router.HandleFunc("/user/{id:[0-9]+}", a.deleteUser).Methods("DELETE")
 }
 
-func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
+func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	count, _ := strconv.Atoi(r.FormValue("count"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
 
@@ -51,33 +51,33 @@ func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
 		start = 0
 	}
 
-	products, err := getProducts(a.DB, start, count)
+	users, err := getUsers(a.DB, start, count)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, products)
+	respondWithJSON(w, http.StatusOK, users)
 }
 
-func (a *App) createProduct(w http.ResponseWriter, r *http.Request) {
-	var p product
+func (a *App) createUser(w http.ResponseWriter, r *http.Request) {
+	var u user
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&p); err != nil {
+	if err := decoder.Decode(&u); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	defer r.Body.Close()
 
-	if err := p.createProduct(a.DB); err != nil {
+	if err := u.createUser(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, p)
+	respondWithJSON(w, http.StatusCreated, u)
 }
 
-func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
+func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -85,8 +85,8 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := product{ID: id}
-	if err := p.getProduct(a.DB); err != nil {
+	u := user{ID: id}
+	if err := u.getUser(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Product not found")
@@ -96,10 +96,10 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, p)
+	respondWithJSON(w, http.StatusOK, u)
 }
 
-func (a *App) updateProduct(w http.ResponseWriter, r *http.Request) {
+func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -107,24 +107,24 @@ func (a *App) updateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var p product
+	var u user
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&p); err != nil {
+	if err := decoder.Decode(&u); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
 		return
 	}
 	defer r.Body.Close()
-	p.ID = id
+	u.ID = id
 
-	if err := p.updateProduct(a.DB); err != nil {
+	if err := u.updateUser(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, p)
+	respondWithJSON(w, http.StatusOK, u)
 }
 
-func (a *App) deleteProduct(w http.ResponseWriter, r *http.Request) {
+func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -132,8 +132,8 @@ func (a *App) deleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := product{ID: id}
-	if err := p.deleteProduct(a.DB); err != nil {
+	u := user{ID: id}
+	if err := u.deleteUser(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
