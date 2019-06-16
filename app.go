@@ -141,23 +141,6 @@ func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, b)
 }
 
-func (a *App) borrow(w http.ResponseWriter, r *http.Request) {
-	var b borrowing
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&b); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-	defer r.Body.Close()
-
-	if err := b.borrow(a.DB); err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	respondWithJSON(w, http.StatusCreated, b)
-}
-
 func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -220,6 +203,23 @@ func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+func (a *App) borrow(w http.ResponseWriter, r *http.Request) {
+	var b borrowing
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&b); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := b.borrow(a.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, b)
 }
 
 func (a *App) unborrow(w http.ResponseWriter, r *http.Request) {

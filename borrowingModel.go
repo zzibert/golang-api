@@ -1,6 +1,9 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
 
 type borrowing struct {
 	ID     int `json:"id"`
@@ -16,12 +19,13 @@ type borrowingWithNames struct {
 }
 
 func (b *borrowing) borrow(db *sql.DB) error {
-	// var exists bool
-	// db.QueryRow("SELECT name FROM books WHERE id=$1 AND quantity > 0", b.BookID).Scan(&exists)
-	// if !exists {
-	// 	return sql.ErrNoRows
-	// }
-	_, err := db.Exec("UPDATE books SET quantity = quantity - 1 WHERE id=$1", b.BookID)
+	var exists string
+	err := db.QueryRow("SELECT name FROM books WHERE id=$1 AND quantity > 0", b.BookID).Scan(&exists)
+	if err != nil {
+
+		return errors.New("This book is currently not available.")
+	}
+	_, err = db.Exec("UPDATE books SET quantity = quantity - 1 WHERE id=$1", b.BookID)
 	err = db.QueryRow("INSERT INTO borrowings(userID, bookID) VALUES($1, $2) RETURNING id", b.UserID, b.BookID).Scan(&b.ID)
 
 	if err != nil {
@@ -32,7 +36,9 @@ func (b *borrowing) borrow(db *sql.DB) error {
 }
 
 func (b *borrowing) unborrow(db *sql.DB) error {
-	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", b.BookID)
+	var bookID int
+	db.QueryRow("SELECT bookID FROM borrowings WHERE id=$1", b.ID).Scan(&bookID)
+	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", bookID)
 	_, err = db.Exec("DELETE FROM borrowings WHERE id=$1", b.ID)
 
 	if err != nil {
