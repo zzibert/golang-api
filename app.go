@@ -41,6 +41,10 @@ func (a *App) initializeRoutes() {
 
 	a.Router.HandleFunc("/book", a.createBook).Methods("POST")
 	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
+
+	a.Router.HandleFunc("/borrowings", a.getBorrowings).Methods("GET")
+	a.Router.HandleFunc("/borrow/:userID/:bookID", a.borrowBook).Methods("PUT")
+	a.Router.HandleFunc("/return/:userID/:bookID", a.returnBook).Methods("PUT")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +87,26 @@ func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, books)
 }
 
+func (a *App) getBorrowings(w http.ResponseWriter, r *http.Request) {
+	count, _ := strconv.Atoi(r.FormValue("count"))
+	start, _ := strconv.Atoi(r.FormValue("start"))
+
+	if count > 10 || count < 1 {
+		count = 10
+	}
+	if start < 0 {
+		start = 0
+	}
+
+	borrowings, err := getBorrowings(a.DB, start, count)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, borrowings)
+}
+
 func (a *App) createUser(w http.ResponseWriter, r *http.Request) {
 	var u user
 	decoder := json.NewDecoder(r.Body)
@@ -101,6 +125,23 @@ func (a *App) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
+	var b book
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&b); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := b.createBook(a.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, b)
+}
+
+func (a *App) borrowBook(w http.ResponseWriter, r *http.Request) {
 	var b book
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&b); err != nil {
