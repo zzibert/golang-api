@@ -21,8 +21,8 @@ func (b *borrowing) borrow(db *sql.DB) error {
 	// if !exists {
 	// 	return sql.ErrNoRows
 	// }
-
-	err := db.QueryRow("INSERT INTO borrowings(userID, bookID) VALUES($1, $2) RETURNING id", b.UserID, b.BookID).Scan(&b.ID)
+	_, err := db.Exec("UPDATE books SET quantity = quantity - 1 WHERE id=$1", b.BookID)
+	err = db.QueryRow("INSERT INTO borrowings(userID, bookID) VALUES($1, $2) RETURNING id", b.UserID, b.BookID).Scan(&b.ID)
 
 	if err != nil {
 		return err
@@ -32,9 +32,14 @@ func (b *borrowing) borrow(db *sql.DB) error {
 }
 
 func (b *borrowing) unborrow(db *sql.DB) error {
-	_, err := db.Exec("DELETE FROM borrowings WHERE id=$1", b.ID)
+	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", b.BookID)
+	_, err = db.Exec("DELETE FROM borrowings WHERE id=$1", b.ID)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getBorrowings(db *sql.DB, start, count int) ([]borrowingWithNames, error) {
