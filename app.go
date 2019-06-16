@@ -42,9 +42,9 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/book", a.createBook).Methods("POST")
 	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
 
-	a.Router.HandleFunc("/borrowings", a.getBorrowings).Methods("GET")
-	a.Router.HandleFunc("/borrow/:userID/:bookID", a.borrowBook).Methods("PUT")
-	a.Router.HandleFunc("/return/:userID/:bookID", a.returnBook).Methods("PUT")
+	a.Router.HandleFunc("/borrow", a.getBorrowings).Methods("GET")
+	a.Router.HandleFunc("/borrow", a.borrow).Methods("POST")
+	// a.Router.HandleFunc("/return", a.unborrow).Methods("POST")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -141,8 +141,8 @@ func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, b)
 }
 
-func (a *App) borrowBook(w http.ResponseWriter, r *http.Request) {
-	var b book
+func (a *App) borrow(w http.ResponseWriter, r *http.Request) {
+	var b borrowing
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&b); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -150,7 +150,7 @@ func (a *App) borrowBook(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := b.createBook(a.DB); err != nil {
+	if err := b.borrow(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
