@@ -24,6 +24,12 @@ func (b *borrowing) borrow(db *sql.DB) error {
 	return nil
 }
 
+func (b *borrowing) unborrow(db *sql.DB) error {
+	_, err := db.Exec("DELETE FROM borrowings WHERE id=$1", b.ID)
+
+	return err
+}
+
 func getBorrowings(db *sql.DB, start, count int) ([]borrowing, error) {
 	rows, err := db.Query(
 		"SELECT id, userID, bookID FROM borrowings LIMIT $1 OFFSET $2",

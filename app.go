@@ -44,7 +44,7 @@ func (a *App) initializeRoutes() {
 
 	a.Router.HandleFunc("/borrow", a.getBorrowings).Methods("GET")
 	a.Router.HandleFunc("/borrow", a.borrow).Methods("POST")
-	// a.Router.HandleFunc("/return", a.unborrow).Methods("POST")
+	a.Router.HandleFunc("/borrow/{id:[0-9]+}", a.unborrow).Methods("DELETE")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -215,6 +215,23 @@ func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	u := user{ID: id}
 	if err := u.deleteUser(a.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+func (a *App) unborrow(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	b := borrowing{ID: id}
+	if err := b.unborrow(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
