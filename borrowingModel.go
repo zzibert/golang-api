@@ -8,6 +8,13 @@ type borrowing struct {
 	BookID int `json:"bookID"`
 }
 
+type borrowingWithNames struct {
+	ID          int    `json:"id"`
+	UserName    string `json:"userName"`
+	UserSurname string `json:"userSurname"`
+	BookName    string `json:"bookName"`
+}
+
 func (b *borrowing) borrow(db *sql.DB) error {
 	// var exists bool
 	// db.QueryRow("SELECT name FROM books WHERE id=$1 AND quantity > 0", b.BookID).Scan(&exists)
@@ -30,7 +37,7 @@ func (b *borrowing) unborrow(db *sql.DB) error {
 	return err
 }
 
-func getBorrowings(db *sql.DB, start, count int) ([]borrowing, error) {
+func getBorrowings(db *sql.DB, start, count int) ([]borrowingWithNames, error) {
 	rows, err := db.Query(
 		"SELECT id, userID, bookID FROM borrowings LIMIT $1 OFFSET $2",
 		count, start)
@@ -41,14 +48,19 @@ func getBorrowings(db *sql.DB, start, count int) ([]borrowing, error) {
 
 	defer rows.Close()
 
-	borrowings := []borrowing{}
+	borrowings := []borrowingWithNames{}
 
 	for rows.Next() {
 		var b borrowing
+		var bw borrowingWithNames
 		if err := rows.Scan(&b.ID, &b.UserID, &b.BookID); err != nil {
 			return nil, err
 		}
-		borrowings = append(borrowings, b)
+		db.QueryRow("SELECT name, surname FROM users WHERE id=$1", b.UserID).Scan(&bw.UserName, &bw.UserSurname)
+		db.QueryRow("SELECT name FROM books WHERE id=$1", b.BookID).Scan(&bw.BookName)
+		bw.ID = b.ID
+
+		borrowings = append(borrowings, bw)
 	}
 
 	return borrowings, nil
