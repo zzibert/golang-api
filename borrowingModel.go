@@ -19,13 +19,15 @@ type borrowingWithNames struct {
 }
 
 func (b *borrowing) borrow(db *sql.DB) error {
-	var exists string
-	err := db.QueryRow("SELECT name FROM books WHERE id=$1 AND quantity > 0", b.BookID).Scan(&exists)
-	if err != nil {
+
+	if sql.ErrNoRows == db.QueryRow("SELECT name FROM books WHERE id=$1 AND quantity > 0", b.BookID).Scan() {
 
 		return errors.New("This book is currently not available.")
 	}
-	_, err = db.Exec("UPDATE books SET quantity = quantity - 1 WHERE id=$1", b.BookID)
+	if sql.ErrNoRows != db.QueryRow("SELECT * FROM borrowings WHERE bookID=$1 AND userID=$2", b.BookID, b.UserID).Scan() {
+		return errors.New("This is already borrowed by this user.")
+	}
+	_, err := db.Exec("UPDATE books SET quantity = quantity - 1 WHERE id=$1", b.BookID)
 	err = db.QueryRow("INSERT INTO borrowings(userID, bookID) VALUES($1, $2) RETURNING id", b.UserID, b.BookID).Scan(&b.ID)
 
 	if err != nil {
@@ -36,6 +38,9 @@ func (b *borrowing) borrow(db *sql.DB) error {
 }
 
 func (b *borrowing) unborrow(db *sql.DB) error {
+	if sql.ErrNoRows == db.QueryRow("SELECT * FROM borrowings WHERE userID=$1 AND bookID=$2", b.UserID, b.BookID).Scan() {
+		return errors.New("This book by this user is not borrowed.")
+	}
 	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", b.BookID)
 	_, err = db.Exec("DELETE FROM borrowings WHERE userID=$1 AND bookID=$2", b.UserID, b.BookID)
 
