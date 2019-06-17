@@ -36,10 +36,8 @@ func (b *borrowing) borrow(db *sql.DB) error {
 }
 
 func (b *borrowing) unborrow(db *sql.DB) error {
-	var bookID int
-	db.QueryRow("SELECT bookID FROM borrowings WHERE id=$1", b.ID).Scan(&bookID)
-	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", bookID)
-	_, err = db.Exec("DELETE FROM borrowings WHERE id=$1", b.ID)
+	_, err := db.Exec("UPDATE books SET quantity = quantity + 1 WHERE id=$1", b.BookID)
+	_, err = db.Exec("DELETE FROM borrowings WHERE userID=$1 AND bookID=$2", b.UserID, b.BookID)
 
 	if err != nil {
 		return err

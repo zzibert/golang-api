@@ -40,7 +40,7 @@ func (a *App) initializeRoutes() {
 
 	a.Router.HandleFunc("/borrow", a.getBorrowings).Methods("GET")
 	a.Router.HandleFunc("/borrow", a.borrow).Methods("POST")
-	a.Router.HandleFunc("/borrow/{id:[0-9]+}", a.unborrow).Methods("DELETE")
+	a.Router.HandleFunc("/borrow/{userID:[0-9]+}/{bookID:[0-9]+}", a.unborrow).Methods("DELETE")
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
@@ -139,13 +139,14 @@ func (a *App) borrow(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) unborrow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	userID, err := strconv.Atoi(vars["userID"])
+	bookID, err := strconv.Atoi(vars["bookID"])
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
 
-	b := borrowing{ID: id}
+	b := borrowing{UserID: userID, BookID: bookID}
 	if err := b.unborrow(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
